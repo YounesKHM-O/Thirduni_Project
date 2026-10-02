@@ -7,6 +7,8 @@ from langchain.messages import ToolMessage
 from langchain.agents.middleware import wrap_model_call, dynamic_prompt, HumanInTheLoopMiddleware
 from langchain.agents.middleware import ModelRequest, ModelResponse
 from typing import Callable
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.checkpoint.memory import InMemorySaver
 
 load_dotenv()
 
@@ -93,8 +95,15 @@ def dynamic_prompt_func(request: ModelRequest) -> str:
 
 
 agent = create_agent(
-        "gpt-5-nano",
+        ChatGoogleGenerativeAI(
+            model="gemini-3.1-flash-lite",
+            temperature=0.2,
+            max_output_tokens=500,
+            timeout=30,
+            max_retries=2,
+        ),
         tools=[authenticate, check_inbox, send_email],
+        checkpointer=InMemorySaver(),
         state_schema=AuthenticatedState,
         context_schema=EmailContext,
         middleware=[

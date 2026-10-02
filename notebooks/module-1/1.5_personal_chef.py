@@ -5,15 +5,15 @@ load_dotenv()
 from langchain.tools import tool
 from typing import Dict, Any
 from tavily import TavilyClient
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.checkpoint.memory import InMemorySaver
 
 tavily_client = TavilyClient()
 
 @tool
 def web_search(query: str) -> Dict[str, Any]:
-
-    """Search the web for information"""
-
-    return tavily_client.search(query)
+    """Search the web for current recipes, ingredients, and cooking techniques."""
+    return tavily_client.search(query, max_results=4)
 
 system_prompt = """
 
@@ -27,8 +27,17 @@ Return recipe suggestions and eventually the recipe instructions to the user, if
 
 from langchain.agents import create_agent
 
+model = ChatGoogleGenerativeAI(
+    model="gemini-3.1-flash-lite",
+    temperature=0.3,
+    max_output_tokens=700,
+    timeout=30,
+    max_retries=2,
+)
+
 agent = create_agent(
-    model="gpt-5-nano",
+    model=model,
     tools=[web_search],
-    system_prompt=system_prompt
+    system_prompt=system_prompt,
+    checkpointer=InMemorySaver(),
 )

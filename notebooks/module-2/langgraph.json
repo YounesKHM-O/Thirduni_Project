@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "wedding_planner": "./2.4_wedding_planner.py:agent"
+  },
+  "env": "../../.env"
+}
